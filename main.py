@@ -84,6 +84,26 @@ def calcular_estadisticas(datos_procesados):
             'area': mayor_area['area']
         }
     }
+def generar_reporte(estadisticas, ruta):
+    """
+    Escribo un reporte de texto con las estadísticas calculadas y la fecha
+    en que se generó el archivo.
+    """
+    fecha = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    mas_poblado = estadisticas['mas_poblado']
+    mayor_area = estadisticas['mayor_area']
+
+    contenido = (
+        f"Reporte de países\n"
+        f"Fecha de generación: {fecha}\n\n"
+        f"País más poblado: {mas_poblado['nombre']} "
+        f"({mas_poblado['poblacion']:,} habitantes)\n"
+        f"País con mayor área: {mayor_area['nombre']} "
+        f"({mayor_area['area']:,.0f} km²)\n"
+    )
+
+    with open(ruta, 'w', encoding='utf-8') as archivo:
+        archivo.write(contenido)
 
 if __name__ == '__main__':
     # Defino la estructura inicial usando una instrucción que ignora si la carpeta ya existe
@@ -93,7 +113,9 @@ if __name__ == '__main__':
     # Almaceno la ruta de la API y construyo la ruta del archivo uniendo los nombres
     url = "https://restcountries.com/v3.1/all?fields=name,capital,region,population,area,flags,languages,currencies,timezones,borders"
     ruta_json = os.path.join(carpeta, "paises.json")
-    ruta_csv = os.path.join(carpeta, "paises.csv")
+    ruta_csv = os.path.join(carpeta, "paises.csv")  
+    ruta_reporte = os.path.join(carpeta, "reporte.txt")
+
     print("Iniciando petición web...")
     # Ejecuto el flujo de trabajo comprobando que los datos realmente existan antes de guardar
     datos = obtener_datos(url)
@@ -112,4 +134,6 @@ if __name__ == '__main__':
               f"({estadisticas['mas_poblado']['poblacion']:,} habitantes)")
         print(f"País con mayor área: {estadisticas['mayor_area']['nombre']} "
               f"({estadisticas['mayor_area']['area']:,.0f} km²)")
-        # Pendiente (compañero): generar reporte.txt con estadisticas y datetime
+        #completar
+        generar_reporte(estadisticas, ruta_reporte)
+        print("Reporte guardado en reporte.txt")
