@@ -56,6 +56,35 @@ def procesar_paises(datos_crudos):
         })
     return paises_limpios
 
+def guardar_csv(datos, ruta):
+    """
+    Escribo los datos limpios en un archivo CSV con encabezados para que
+    sea fácil de abrir en Excel o cualquier hoja de cálculo.
+    """
+    columnas = ['nombre', 'capital', 'region', 'poblacion', 'area']
+    with open(ruta, 'w', encoding='utf-8', newline='') as archivo:
+        escritor = csv.DictWriter(archivo, fieldnames=columnas)
+        escritor.writeheader()
+        escritor.writerows(datos)
+
+def calcular_estadisticas(datos_procesados):
+    """
+    Recorro la lista de países limpios y determino cuál tiene la mayor
+    población y cuál el mayor área territorial.
+    """
+    mas_poblado = max(datos_procesados, key=lambda p: p['poblacion'])
+    mayor_area = max(datos_procesados, key=lambda p: p['area'])
+    return {
+        'mas_poblado': {
+            'nombre': mas_poblado['nombre'],
+            'poblacion': mas_poblado['poblacion']
+        },
+        'mayor_area': {
+            'nombre': mayor_area['nombre'],
+            'area': mayor_area['area']
+        }
+    }
+
 if __name__ == '__main__':
     # Defino la estructura inicial usando una instrucción que ignora si la carpeta ya existe
     carpeta = "datos_paises"
@@ -64,10 +93,23 @@ if __name__ == '__main__':
     # Almaceno la ruta de la API y construyo la ruta del archivo uniendo los nombres
     url = "https://restcountries.com/v3.1/all?fields=name,capital,region,population,area,flags,languages,currencies,timezones,borders"
     ruta_json = os.path.join(carpeta, "paises.json")
+    ruta_csv = os.path.join(carpeta, "paises.csv")
     print("Iniciando petición web...")
     # Ejecuto el flujo de trabajo comprobando que los datos realmente existan antes de guardar
     datos = obtener_datos(url)
     if datos:
         guardar_json(datos, ruta_json)
+        print("Datos crudos guardados en paises.json")
+
         datos_procesados = procesar_paises(datos)
         print(f"Se extrajeron y limpiaron los datos de {len(datos_procesados)} países.")
+
+        guardar_csv(datos_procesados, ruta_csv)
+        print("Datos limpios guardados en paises.csv")
+
+        estadisticas = calcular_estadisticas(datos_procesados)
+        print(f"País más poblado: {estadisticas['mas_poblado']['nombre']} "
+              f"({estadisticas['mas_poblado']['poblacion']:,} habitantes)")
+        print(f"País con mayor área: {estadisticas['mayor_area']['nombre']} "
+              f"({estadisticas['mayor_area']['area']:,.0f} km²)")
+        # Pendiente (compañero): generar reporte.txt con estadisticas y datetime
