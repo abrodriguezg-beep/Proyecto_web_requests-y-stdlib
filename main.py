@@ -4,6 +4,8 @@ import csv
 import requests
 from datetime import datetime
 
+URL_API = "https://restcountries.com/v3.1/all"
+
 def obtener_datos(url):
     """ 
     Me encargo de realizar la petición a la API pública. Decidí implementar
@@ -11,14 +13,15 @@ def obtener_datos(url):
     internet es una mala práctica.
     """
     try:
-        respuesta = requests.get(url)
+        respuesta = requests.get(url, timeout= 10)
         # Esta línea valida la conexión de forma mucho más eficiente que un if manual
         respuesta.raise_for_status()
         return respuesta.json()
     except requests.exceptions.RequestException as e:
         print("Error en la solicitud web:", e)
+    except requests.exceptions.Timeout as e:
+        print('Error en la solicitud web', e)
         return None
-
 def guardar_json(datos, ruta):
     """
     Tomo la información descargada y la respaldo en un documento de texto.
@@ -72,18 +75,20 @@ def calcular_estadisticas(datos_procesados):
     Recorro la lista de países limpios y determino cuál tiene la mayor
     población y cuál el mayor área territorial.
     """
-    mas_poblado = max(datos_procesados, key=lambda p: p['poblacion'])
-    mayor_area = max(datos_procesados, key=lambda p: p['area'])
+    mas_poblado = datos_procesados[0]
+    mayor_area = datos_procesados[0]
+
+    for pais in datos_procesados:
+        if pais['poblacion'] > mas_poblado['poblacion']:
+            mas_poblado = pais
+        if pais['area'] > mayor_area['area']:
+            mayor_area = pais
+
     return {
-        'mas_poblado': {
-            'nombre': mas_poblado['nombre'],
-            'poblacion': mas_poblado['poblacion']
-        },
-        'mayor_area': {
-            'nombre': mayor_area['nombre'],
-            'area': mayor_area['area']
-        }
+        'mas_poblado': {'nombre': mas_poblado['nombre'], 'poblacion': mas_poblado['poblacion']},
+        'mayor_area': {'nombre': mayor_area['nombre'], 'area': mayor_area['area']}
     }
+    
 def generar_reporte(estadisticas, ruta):
     """
     Escribo un reporte de texto con las estadísticas calculadas y la fecha
