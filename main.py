@@ -134,6 +134,5 @@ if __name__ == '__main__':
               f"({estadisticas['mas_poblado']['poblacion']:,} habitantes)")
         print(f"País con mayor área: {estadisticas['mayor_area']['nombre']} "
               f"({estadisticas['mayor_area']['area']:,.0f} km²)")
-        #completar
         generar_reporte(estadisticas, ruta_reporte)
         print("Reporte guardado en reporte.txt")
